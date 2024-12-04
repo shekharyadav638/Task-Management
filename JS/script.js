@@ -6,7 +6,6 @@ const data = [];
 
 function renderData() {
   console.log(data);
-
   localStorage.setItem("data", JSON.stringify(data));
   tasks.innerHTML = "";
   data.forEach((list) => {
@@ -19,6 +18,7 @@ function renderData() {
       </div>
       <div class="list-items"></div>
       <button class="addItem">Add Card</button>
+      <img src= "delete.png" alt = "del-icon" class="delete"/>
     `;
 
     const listItems = listContainer.querySelector(".list-items");
@@ -80,6 +80,14 @@ tasks.addEventListener("click", (e) => {
     if (!listItems.querySelector(".item-container")) {
       listItems.appendChild(itemContainer);
     }
+  } else if (e.target.classList.contains("delete")) {
+    console.log("delete pressed");
+    const listName = e.target
+      .closest(".list")
+      .querySelector(".list-name").textContent;
+    const index = data.findIndex((list) => list.key === listName);
+    data.splice(index, 1);
+    renderData();
   }
 });
 
@@ -164,7 +172,7 @@ tasks.addEventListener("dragover", (e) => {
     : e.target.closest(".list-items");
 
   if (targetList) {
-    targetList.style.backgroundColor = "#f0f0f0";
+    targetList.style.border = "2px dashed #000";
   }
 });
 
@@ -174,7 +182,7 @@ tasks.addEventListener("dragleave", (e) => {
     : e.target.closest(".list-items");
 
   if (targetList) {
-    targetList.style.backgroundColor = "";
+    targetList.style.border = "none";
   }
 });
 
@@ -186,7 +194,7 @@ tasks.addEventListener("drop", (e) => {
     : e.target.closest(".list-items");
 
   if (targetList && draggedCard) {
-    targetList.style.backgroundColor = "";
+    targetList.style.border = "none";
 
     const cardName = draggedCard.textContent;
     const fromListName = draggedFromList

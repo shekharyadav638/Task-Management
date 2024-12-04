@@ -51,12 +51,22 @@ h1 {
     flex-direction: column;
     gap: 10px;
     transition: transform 0.2s ease-in-out;
+    position: relative;
 }
 
 .list-header {
     font-size: 15px;
     font-weight: bold;
     color: #444;
+}
+
+.delete{
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
 }
 
 .list-items {
