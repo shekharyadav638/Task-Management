@@ -1,5 +1,4 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 import AddList from "./AddList";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
@@ -80,144 +79,168 @@ const RenderData = () => {
   };
 
   const onDragEnd = (result) => {
-    const { source, destination } = result;
+    const { source, destination, type } = result;
+    // console.log("Result: " + source, destination, type);
+
     if (!destination) return;
-    if (
-      source.droppableId === destination.droppableId &&
-      source.index === destination.index
-    ) {
-      return;
+    if (type === "list") {
+      const reorderedData = Array.from(data);
+      const [movedList] = reorderedData.splice(source.index, 1);
+      reorderedData.splice(destination.index, 0, movedList);
+      setData(reorderedData);
+    } else if (type === "card") {
+      const sourceList = data.find((list) => list.key === source.droppableId);
+      const destinationList = data.find(
+        (list) => list.key === destination.droppableId
+      );
+
+      const [movedCard] = sourceList.value.splice(source.index, 1);
+      destinationList.value.splice(destination.index, 0, movedCard);
+      setData([...data]);
     }
-    const sourceList = data.find((list) => list.key === source.droppableId);
-    const destinationList = data.find(
-      (list) => list.key === destination.droppableId
-    );
-
-    const [movedCard] = sourceList.value.splice(source.index, 1);
-    destinationList.value.splice(destination.index, 0, movedCard);
-
-    setData([...data]);
-    // console.log(data);
   };
 
   return (
     <div className="flex gap-5 flex-wrap p-3">
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="tasks flex gap-5 flex-wrap">
-          {data?.map((item, index) => (
+        <Droppable droppableId="tasks" direction="horizontal" type="list">
+          {(provided) => (
             <div
-              key={item.key}
-              className="list"
-              onMouseEnter={() => setHoveredList({ key: item.key })}
-              onMouseLeave={() => setHoveredList(null)}
+              className="tasks flex gap-5 flex-wrap"
+              ref={provided.innerRef}
+              {...provided.droppableProps}
             >
-              <div className="list-header">
-                <h3 className="text-start font-bold text-l">{item.key}</h3>
-              </div>
-              <Droppable droppableId={item.key}>
-                {(provided) => (
-                  <div
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                    className="list-items"
-                  >
-                    {item.value.map((card, index) => (
-                      <Draggable
-                        key={`${item.key}-${index}`}
-                        draggableId={`${item.key}-${index}`}
-                        index={index}
-                      >
+              {data?.map((item, index) => (
+                <Draggable key={item.key} draggableId={item.key} index={index}>
+                  {(provided) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      {...provided.dragHandleProps}
+                      className="list"
+                      onMouseEnter={() => setHoveredList({ key: item.key })}
+                      onMouseLeave={() => setHoveredList(null)}
+                    >
+                      <div className="list-header">
+                        <h3 className="text-start font-bold text-l">
+                          {item.key}
+                        </h3>
+                      </div>
+                      <Droppable droppableId={item.key} type="card">
                         {(provided) => (
                           <div
                             ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            className="card"
-                            onMouseEnter={() =>
-                              setHoveredCard({ key: item.key, index })
-                            }
-                            onMouseLeave={() => setHoveredCard(null)}
+                            {...provided.droppableProps}
+                            className="list-items"
                           >
-                            {editingCard?.key === item.key &&
-                            editingCard?.index === index ? (
-                              <input
-                                type="text"
-                                defaultValue={card}
-                                onBlur={(e) =>
-                                  saveEditedCard(
-                                    item.key,
-                                    index,
-                                    e.target.value
-                                  )
-                                }
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter") {
-                                    saveEditedCard(
-                                      item.key,
-                                      index,
-                                      e.target.value
-                                    );
-                                  }
-                                }}
-                                autoFocus
-                              />
-                            ) : (
-                              <>
-                                {card}
-                                {hoveredCard?.key === item.key &&
-                                  hoveredCard?.index === index && (
-                                    <div className="modify">
-                                      <img
-                                        src="./edit.png"
-                                        alt="edit-icon"
-                                        onClick={() =>
-                                          editCard(item.key, index)
+                            {item.value.map((card, index) => (
+                              <Draggable
+                                key={`${item.key}-${index}`}
+                                draggableId={`${item.key}-${index}`}
+                                index={index}
+                              >
+                                {(provided) => (
+                                  <div
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
+                                    {...provided.dragHandleProps}
+                                    className="card"
+                                    onMouseEnter={() =>
+                                      setHoveredCard({ key: item.key, index })
+                                    }
+                                    onMouseLeave={() => setHoveredCard(null)}
+                                  >
+                                    {editingCard?.key === item.key &&
+                                    editingCard?.index === index ? (
+                                      <input
+                                        type="text"
+                                        defaultValue={card}
+                                        onBlur={(e) =>
+                                          saveEditedCard(
+                                            item.key,
+                                            index,
+                                            e.target.value
+                                          )
                                         }
+                                        onKeyDown={(e) => {
+                                          if (e.key === "Enter") {
+                                            saveEditedCard(
+                                              item.key,
+                                              index,
+                                              e.target.value
+                                            );
+                                          }
+                                        }}
+                                        autoFocus
                                       />
-                                      <img
-                                        src="./delete.png"
-                                        alt="del-icon"
-                                        onClick={() =>
-                                          deleteCard(item.key, index)
-                                        }
-                                      />
-                                    </div>
-                                  )}
-                              </>
-                            )}
+                                    ) : (
+                                      <>
+                                        {card}
+                                        {hoveredCard?.key === item.key &&
+                                          hoveredCard?.index === index && (
+                                            <div className="modify">
+                                              <img
+                                                src="./edit.png"
+                                                alt="edit-icon"
+                                                onClick={() =>
+                                                  editCard(item.key, index)
+                                                }
+                                              />
+                                              <img
+                                                src="./delete.png"
+                                                alt="del-icon"
+                                                onClick={() =>
+                                                  deleteCard(item.key, index)
+                                                }
+                                              />
+                                            </div>
+                                          )}
+                                      </>
+                                    )}
+                                  </div>
+                                )}
+                              </Draggable>
+                            ))}
+                            {provided.placeholder}
                           </div>
                         )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
-              {item.showCardBox && (
-                <div className="add-card">
-                  <input type="text" placeholder="Type card title" />
-                  <div className="flex gap-3">
-                    <button onClick={() => saveCard(item.key)}>Add Card</button>
-                    <button onClick={() => closeCardBox(item.key)}>X</button>
-                  </div>
-                </div>
-              )}
-              {!item.showCardBox && (
-                <button onClick={() => addCard(item.key)}>Add Card</button>
-              )}
-              {hoveredList?.key === item.key && (
-                <img
-                  src="./delete.png"
-                  alt="del-icon"
-                  className="delete"
-                  onClick={() => deleteList(item.key)}
-                />
-              )}
+                      </Droppable>
+                      {item.showCardBox && (
+                        <div className="add-card">
+                          <input type="text" placeholder="Type card title" />
+                          <div className="flex gap-3">
+                            <button onClick={() => saveCard(item.key)}>
+                              Add Card
+                            </button>
+                            <button onClick={() => closeCardBox(item.key)}>
+                              X
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                      {!item.showCardBox && (
+                        <button onClick={() => addCard(item.key)}>
+                          Add Card
+                        </button>
+                      )}
+                      {hoveredList?.key === item.key && (
+                        <img
+                          src="./delete.png"
+                          alt="del-icon"
+                          className="delete"
+                          onClick={() => deleteList(item.key)}
+                        />
+                      )}
+                    </div>
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
+              <AddList onAdd={addList} />
             </div>
-          ))}
-        </div>
+          )}
+        </Droppable>
       </DragDropContext>
-      <AddList onAdd={addList} />
     </div>
   );
 };
