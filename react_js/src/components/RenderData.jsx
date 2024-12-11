@@ -103,7 +103,7 @@ const RenderData = () => {
   return (
     <div className="flex gap-5 flex-wrap p-3">
       <DragDropContext onDragEnd={onDragEnd}>
-        <Droppable droppableId="tasks" direction="horizontal" type="list">
+        <Droppable droppableId="all-lists" direction="horizontal" type="list">
           {(provided) => (
             <div
               className="tasks flex gap-5 flex-wrap"
